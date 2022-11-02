@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { KMS } from 'aws-sdk';
 import { keccak256 } from 'js-sha3';
 import * as ethutil from 'ethereumjs-util';
@@ -8,17 +10,16 @@ import { Transaction, TxData } from 'ethereumjs-tx';
 import { TransactionReceipt } from 'web3-core/types';
 
 const kms = new KMS({
-    accessKeyId: '<access_key_id>', // credentials for your IAM user with KMS access
-    secretAccessKey: '<access_secret>', // credentials for your IAM user with KMS access
-    region: 'us-east-1',
+    region: 'eu-central-1',
     apiVersion: '2014-11-01',
 });
 
-const keyId = '<KMS key id>';
+const keyId = '6a42b7fd-74e6-4a5c-a9ae-49bbb7d08a40';
+const toAddress = '0xcF5C56d73C1E8Bd62522e14Ad753898028432036';
 
 const EcdsaSigAsnParse = asn1.define('EcdsaSig', function(this: any) {
     // parsing this according to https://tools.ietf.org/html/rfc3279#section-2.2.3 
-    this.seq().obj( 
+    this.seq().obj(
         this.key('r').int(), 
         this.key('s').int(),
     );
@@ -138,7 +139,7 @@ function findRightKey(msg: Buffer, r : BN, s: BN, expectedEthAddr: string) {
 
 txTest();
 async function txTest() {
-    const web3 = new Web3(new Web3.providers.HttpProvider("https://kovan.infura.io/v3/<infura_key>"));
+    const web3 = new Web3(new Web3.providers.HttpProvider("https://goerli.infura.io/v3/efa80786b30a41d69dccdfcb39dd2099"));
 
     let pubKey = await getPublicKey(keyId);
     let ethAddr = getEthereumAddress((pubKey.PublicKey as Buffer));
@@ -150,7 +151,7 @@ async function txTest() {
         nonce: await web3.eth.getTransactionCount(ethAddr),
         gasPrice: '0x0918400000',
         gasLimit: 160000,
-        to: '0x0000000000000000000000000000000000000000',
+        to: toAddress,
         value: '0x00',
         data: '0x00',
         r: sig.r.toBuffer(),
